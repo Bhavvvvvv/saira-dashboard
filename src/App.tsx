@@ -10,7 +10,7 @@ interface CallRecord {
   customer_name: string;
   recipient_phone_number: string;
   conversation_duration: string;
-  total_cost: string;
+  total_cost?: string;
   status: string;
   created_at: string;
   summary: string;
@@ -90,7 +90,8 @@ function App() {
       'active': 'New Lead'
     };
     
-    return statusMap[record.status.toLowerCase()] || 'New Lead';
+    const status = record.status ? record.status.toLowerCase() : '';
+    return statusMap[status] || 'New Lead';
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -114,6 +115,14 @@ function App() {
       (record.summary && record.summary.toLowerCase().includes(search))
     );
   });
+
+  // Helper function to capitalize first letter of each word
+  const capitalizeFirstLetter = (string: string): string => {
+    if (!string) return '';
+    return string.split(' ').map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+    ).join(' ');
+  };
 
   return (
     <div className="App">
@@ -175,12 +184,12 @@ function App() {
                       <thead>
                         <tr>
                           <th style={{ width: '60px' }}>Sr. No.</th>
+                          <th style={{ minWidth: '120px' }}>Customer Name</th>
                           <th style={{ minWidth: '140px' }}>Phone Number</th>
                           <th style={{ minWidth: '120px' }}>Recording URL</th>
                           <th style={{ minWidth: '140px' }}>Current Step ID</th>
                           <th style={{ minWidth: '140px' }}>Call ID</th>
                           <th style={{ minWidth: '100px' }}>Duration</th>
-                          <th style={{ minWidth: '120px' }}>Total Cost</th>
                           <th style={{ minWidth: '120px' }}>Created At</th>
                           <th style={{ minWidth: '100px' }}>Status</th>
                           <th style={{ minWidth: '100px' }}>Tag</th>
@@ -202,14 +211,14 @@ function App() {
                             return (
                               <tr key={record.id}>
                                 <td style={{ width: '60px' }}>{index + 1}</td>
+                                <td style={{ minWidth: '120px' }}>{record.customer_name || 'N/A'}</td>
                                 <td style={{ minWidth: '140px' }}>{record.recipient_phone_number || 'N/A'}</td>
                                 <td style={{ minWidth: '120px' }}><a href={recordingUrl} target="_blank" rel="noopener noreferrer">Recording</a></td>
                                 <td style={{ minWidth: '140px' }}>{record.step_id || 'N/A'}</td>
                                 <td style={{ minWidth: '140px' }}>{getCallId(record.telephony_data)}</td>
                                 <td style={{ minWidth: '100px' }}>{record.conversation_duration || '0'}s</td>
-                                <td style={{ minWidth: '120px' }}>${record.total_cost || '0.00'}</td>
                                 <td style={{ minWidth: '120px' }}>{new Date(record.created_at).toLocaleDateString()}</td>
-                                <td style={{ minWidth: '100px' }}>{record.status || 'N/A'}</td>
+                                <td style={{ minWidth: '100px' }}>{capitalizeFirstLetter(record.status) || 'N/A'}</td>
                                 <td style={{ minWidth: '100px' }}>{getTag(record)}</td>
                                 <td style={{ minWidth: '150px' }}>
                                   <Button 
@@ -271,8 +280,7 @@ function App() {
               <h4>Customer: {selectedRecord.customer_name || 'N/A'}</h4>
               <p><strong>Phone:</strong> {selectedRecord.recipient_phone_number}</p>
               <p><strong>Duration:</strong> {selectedRecord.conversation_duration} seconds</p>
-              <p><strong>Cost:</strong> ${selectedRecord.total_cost}</p>
-              <p><strong>Status:</strong> {selectedRecord.status}</p>
+              <p><strong>Status:</strong> {capitalizeFirstLetter(selectedRecord.status)}</p>
               <p><strong>Date:</strong> {new Date(selectedRecord.created_at).toLocaleString()}</p>
               
               <h5 className="mt-4">Summary</h5>
